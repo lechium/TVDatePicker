@@ -1,0 +1,13 @@
+use_frameworks!
+
+platform :tvos, '9.0'
+
+target 'TVDatePicker_Example' do
+  pod 'TVDatePicker', :path => '../'
+
+  target 'TVDatePicker_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
