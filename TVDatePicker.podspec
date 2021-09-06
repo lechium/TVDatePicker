@@ -31,7 +31,7 @@ Create a date picker in all of the same available styles in its iOS counterpart,
   s.tvos.deployment_target = '9.0'
 
   s.source_files = 'TVDatePicker/Classes/**/*'
-  
+  s.swift_version = '5.0'
   # s.resource_bundles = {
   #   'TVDatePicker' => ['TVDatePicker/Assets/*.png']
   # }
