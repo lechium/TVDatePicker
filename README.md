@@ -1,6 +1,8 @@
 # TVDatePicker
 
-The missing UIDatePicker for tvOS
+The missing UIDatePicker for tvOS.
+
+I created a new repo for this because its easier to create a cocoapod with a fresh project, this is identical to the code in the repo here: https://github.com/lechium/KBDatePicker go there for screenshots and whatnot for the time being.
 
 [![CI Status](https://img.shields.io/travis/Kevin Bradley/TVDatePicker.svg?style=flat)](https://travis-ci.org/Kevin Bradley/TVDatePicker)
 [![Version](https://img.shields.io/cocoapods/v/TVDatePicker.svg?style=flat)](https://cocoapods.org/pods/TVDatePicker)

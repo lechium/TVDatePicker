@@ -22,7 +22,7 @@ Create a date picker in all of the same available styles in its iOS counterpart,
                        DESC
 
   s.homepage         = 'https://github.com/lechium/TVDatePicker'
-  # s.screenshots     = 'raw.githubusercontent.com/lechium/KBDatePicker/master/Examples/KBDatePickerModeCountDownTimer.png', 'raw.githubusercontent.com/lechium/KBDatePicker/blob/master/Examples/KBDatePickerModeDate.png', 'raw.githubusercontent.com/lechium/KBDatePicker/blob/master/Examples/KBDatePickerModeDateAndTime.png', 'raw.githubusercontent.com/lechium/KBDatePicker/blob/master/Examples/KBDatePickerModeTime.png'
+   s.screenshots     = 'raw.githubusercontent.com/lechium/KBDatePicker/master/Examples/KBDatePickerModeCountDownTimer.png', 'raw.githubusercontent.com/lechium/KBDatePicker/blob/master/Examples/KBDatePickerModeDate.png', 'raw.githubusercontent.com/lechium/KBDatePicker/blob/master/Examples/KBDatePickerModeDateAndTime.png', 'raw.githubusercontent.com/lechium/KBDatePicker/blob/master/Examples/KBDatePickerModeTime.png'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'Kevin Bradley' => 'kevin.w.bradley@me.com' }
   s.source           = { :git => 'https://github.com/lechium/TVDatePicker.git', :tag => s.version.to_s }
