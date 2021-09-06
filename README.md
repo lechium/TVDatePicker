@@ -1,5 +1,7 @@
 # TVDatePicker
 
+The missing UIDatePicker for tvOS
+
 [![CI Status](https://img.shields.io/travis/Kevin Bradley/TVDatePicker.svg?style=flat)](https://travis-ci.org/Kevin Bradley/TVDatePicker)
 [![Version](https://img.shields.io/cocoapods/v/TVDatePicker.svg?style=flat)](https://cocoapods.org/pods/TVDatePicker)
 [![License](https://img.shields.io/cocoapods/l/TVDatePicker.svg?style=flat)](https://cocoapods.org/pods/TVDatePicker)
