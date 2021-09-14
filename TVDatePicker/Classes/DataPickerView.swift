@@ -21,6 +21,12 @@ public enum DatePickerMode: Int, CaseIterable {
 public class DatePickerView: UIControl, TableViewProtocol {
     
     static let stackViewHeight: CGFloat = 128.0
+    static let staticTopPadding: CGFloat = 80.0
+    static let staticBottomPadding: CGFloat = 60.0
+    static let extraPadding: CGFloat = 40.0
+    static var fullHeight: CGFloat {
+        DatePickerView.stackViewHeight+DatePickerView.staticTopPadding+DatePickerView.staticBottomPadding+DatePickerView.extraPadding
+    }
     static let numberOfCells: Int = 100000
      public init(withHybrdidLayout: Bool) {
         super.init(frame: .zero)
@@ -92,6 +98,9 @@ public class DatePickerView: UIControl, TableViewProtocol {
     
     public var countDownDuration: TimeInterval = 0.0 {
         didSet {
+            if countDownDuration > 86399 {
+                countDownDuration = 86399
+            }
             scrollToCurrentDateAnimated(true)
         }
     } // for CountDownTimer, ignored otherwise. default is 0.0. limit is 23:59 (86,399 seconds). value being set is div 60 (drops remaining seconds).
@@ -150,7 +159,7 @@ public class DatePickerView: UIControl, TableViewProtocol {
     
     func validateMinMax() -> Bool {
         guard let minimumDate = minimumDate, let maximumDate = maximumDate else {
-            return false
+            return true
         }
         if minimumDate > maximumDate {
             self.minimumDate = nil
@@ -222,16 +231,16 @@ public class DatePickerView: UIControl, TableViewProtocol {
     /// Makes it easy to navigate away from the date picker using the menu button
     @objc func menuGestureRecognized(_ recognizer: UIGestureRecognizer) {
         if recognizer.state == .ended {
-            if let sv = superview as? DatePickerTableView {
+            if let sv = superview as? DatePickerTableView { // if gesture recognizer is contained by a DatePickerTableView - tell our delegate to update focus engine
                 if let del = sv.delegate as? UIViewController {
                     del.setNeedsFocusUpdate()
                     del.updateFocusIfNeeded()
                 }
-            } else {
+            } else { //if recognizer is not contained by a DatePickerTableView
                 let app = UIApplication.shared
                 let window = app.keyWindow // seriously swift, no way to silence warnings with pragmas? thats effing stupid.
                 let root = window?.rootViewController
-                if root?.view == self.superview {
+                if root?.view == self.superview { //see if the root view controller is the same as our current superview, if so, send focus updates on that chain.
                     root?.setNeedsFocusUpdate()
                     root?.updateFocusIfNeeded()
                 }
@@ -246,7 +255,7 @@ public class DatePickerView: UIControl, TableViewProtocol {
         var dc = calendar.dateComponents([.year, .day, .month], from: Date())
         let currentDay = dc.day
         let currentYear = dc.year
-        if let days = calendar.range(of: .day, in: .year, for: DatePickerView.todayIn(year: year)) {
+        if let todayInYear = DatePickerView.todayIn(year: year), let days = calendar.range(of: .day, in: .year, for:todayInYear) {
             for i in 1...days.endIndex - days.startIndex { //i guess?
                 dc.day = i
                 if dc.day == currentDay && dc.year == currentYear {
@@ -285,7 +294,7 @@ public class DatePickerView: UIControl, TableViewProtocol {
         datePickerStackView.distribution = stackDistribution
         widthConstraint = datePickerStackView.widthAnchor.constraint(equalToConstant: widthForMode())
         widthConstraint?.isActive = true
-        heightAnchor.constraint(equalToConstant: DatePickerView.stackViewHeight+81+60+40).isActive = true
+        heightAnchor.constraint(equalToConstant: DatePickerView.fullHeight).isActive = true
         datePickerStackView.heightAnchor.constraint(equalToConstant: DatePickerView.stackViewHeight).isActive = true
         addSubview(datePickerStackView)
         if !hybridLayout {
@@ -297,10 +306,10 @@ public class DatePickerView: UIControl, TableViewProtocol {
         datePickerLabel.isHidden = !showDateLabel
         addSubview(datePickerLabel)
         datePickerLabel.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        datePickerLabel.topAnchor.constraint(equalTo: datePickerStackView.bottomAnchor, constant: 80).isActive = true
+        datePickerLabel.topAnchor.constraint(equalTo: datePickerStackView.bottomAnchor, constant: DatePickerView.staticTopPadding).isActive = true
         setupLabelsForMode()
         if let dl = self.dayLabel {
-            datePickerStackView.topAnchor .constraint(equalTo: dl.bottomAnchor, constant: 60).isActive = true
+            datePickerStackView.topAnchor .constraint(equalTo: dl.bottomAnchor, constant: DatePickerView.staticBottomPadding).isActive = true
         } else {
             datePickerStackView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
         }
@@ -585,28 +594,36 @@ public class DatePickerView: UIControl, TableViewProtocol {
             
         case .Date:
             let components = currentComponents(units: [.year, .month, .day])
-            let monthIndex = components.month! - 1 // FIXME: no force unwraps if possible, just trying to get this working
-            let monthSymbol = self.monthData()[monthIndex]
-            if monthTable?.selectedValue != monthSymbol {
-                scrollToValue(monthSymbol, inTableViewType: .Months, animated: animated)
+            if var monthIndex = components.month {
+                monthIndex -= 1
+                let monthSymbol = self.monthData()[monthIndex]
+                if monthTable?.selectedValue != monthSymbol {
+                    scrollToValue(monthSymbol, inTableViewType: .Months, animated: animated)
+                }
             }
-            let dayIndex = components.day!
-            let dayString = "\(dayIndex)"
-            if dayTable?.selectedValue != dayString {
-                scrollToValue(dayString, inTableViewType: .Days, animated: animated)
+            if let dayIndex = components.day {
+                let dayString = "\(dayIndex)"
+                if dayTable?.selectedValue != dayString {
+                    scrollToValue(dayString, inTableViewType: .Days, animated: animated)
+                }
             }
-            let yearIndex = components.year! - 1 // FIXME: no force unwraps if possible, just trying to get this working
-            let yearString = "\(yearIndex)"
-            if yearTable?.selectedValue != yearString {
-                scrollToValue(yearString, inTableViewType: .Years, animated: animated)
+            if var yearIndex = components.year {
+                yearIndex -= 1
+                let yearString = "\(yearIndex)"
+                if yearTable?.selectedValue != yearString {
+                    yearSelected = yearIndex
+                    scrollToValue(yearString, inTableViewType: .Years, animated: animated)
+                }
             }
             delayedUpdateFocus()
             
         default:
             loadTimeFromDateAnimated(animated)
             let components = currentComponents(units: [.year, .day])
-            let currentDay = components.day!-1
-            dateTable?.scrollToRow(at: IndexPath(row: currentDay, section: 0), at: .top, animated: animated)
+            if var currentDay = components.day {
+                currentDay -= 1
+                dateTable?.scrollToRow(at: IndexPath(row: currentDay, section: 0), at: .top, animated: animated)
+            }
         }
     }
     
@@ -629,10 +646,10 @@ public class DatePickerView: UIControl, TableViewProtocol {
         return 0
     }
     
-    class func todayIn(year: Int) -> Date {
+    public class func todayIn(year: Int) -> Date? {
         var dc = Calendar.current.dateComponents([.day, .year, .month, .hour, .minute], from: Date())
         dc.year = year
-        return Calendar.current.date(from: dc)! //hopefully this is safe...
+        return Calendar.current.date(from: dc)
     }
     
     func updateDetailsAtIndexPath(_ indexPath: IndexPath, inTable: DatePickerTableView) {
@@ -692,14 +709,15 @@ public class DatePickerView: UIControl, TableViewProtocol {
             var adjustment = 1
             if minYear > 1 {
                 adjustment = 0
-                year = Int(yt.selectedValue!)! // FIXME: force unwrapping
+                year = Int(yt.selectedValue!)! // This force unwrap is safe, if selectedIndexPath is not nil selected value will always contain a value.
             }
             components.year = year + adjustment
+            yearSelected = year
             var newDate: Date?
             repeat {
                 newDate = calendar.date(from: components)
                 components.day! -= 1
-            } while newDate == nil || calendar.component(.month, from: newDate!) != components.month // FIXME: force unwrapping
+            } while newDate == nil || calendar.component(.month, from: newDate!) != components.month // FIXME: lots of force unwrapping
             currentDate = newDate!
             
         case amPMTable:
@@ -827,6 +845,7 @@ public class DatePickerView: UIControl, TableViewProtocol {
                     }
                 } //contextBrothers
                 if let nextIndexPath = context.nextFocusedIndexPath, let nextFocusedView = context.nextFocusedView as? UITableViewCell {
+                    
                     table.selectedIndexPath = nextIndexPath
                     if self.datePickerMode == .CountDownTimer {
                         self.updateDetailsForCountdownTable(table, currentCell: nextFocusedView)
@@ -860,8 +879,7 @@ public class DatePickerView: UIControl, TableViewProtocol {
         } else {
             maxYear = DatePickerView.numberOfCells
         }
-        
-        if yearTable?.selectedValue != nil && yearSelected != 0 {
+        if yearTable?.selectedValue == nil && yearSelected != 0 {
             if minYear > 1 {
                 let yearDifference = yearSelected - minYear
                 yearTable?.scrollToRow(at: IndexPath.init(row: yearDifference, section: 0), at: .top, animated: false)
@@ -972,10 +990,12 @@ public class DatePickerView: UIControl, TableViewProtocol {
         case .Years:
             if var foundIndex = Int(value) {
                 if minYear > 1 {
-                    foundIndex = foundIndex - minYear
+                    let newIndex = foundIndex
+                    foundIndex = newIndex - minYear
                 }
                 ip = IndexPath(row: foundIndex, section: 0)
                 yearTable?.scrollToRow(at: ip, at: .top, animated: animated)
+                yearTable?.selectRow(at: ip, animated: animated, scrollPosition: .top)
                 delayedUpdateFocus()
             }
         default:
@@ -1049,6 +1069,9 @@ public class DatePickerView: UIControl, TableViewProtocol {
                 guard let newCell = pickerTableView.dequeueReusableCell(withIdentifier: reuseId) else {
                     cell = UITableViewCell.init(style: .default, reuseIdentifier: reuseId)
                     cell.textLabel?.textAlignment = .center
+                    if (minYear > 1) {
+                        cellText = "\(indexPath.row + minYear + 1)"
+                    }
                     cell.textLabel?.text = cellText
                     return cell
                 }
@@ -1058,7 +1081,7 @@ public class DatePickerView: UIControl, TableViewProtocol {
                     cellText = "\(indexPath.row + minYear + 1)"
                 }
                 cell.textLabel?.text = cellText
-            
+                return cell
             case dateTable:
                 reuseId = "date"
                 let cellText = dateData[indexPath.row]
@@ -1117,7 +1140,7 @@ public class DatePickerView: UIControl, TableViewProtocol {
     }
     
     public override func sizeThatFits(_ size: CGSize) -> CGSize {
-        return CGSize(width: widthForMode(), height: DatePickerView.stackViewHeight+81+60+40)
+        return CGSize(width: widthForMode(), height: DatePickerView.fullHeight)
     }
     
     func widthForMode() -> CGFloat {

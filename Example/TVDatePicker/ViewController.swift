@@ -29,9 +29,10 @@ class ViewController: UIViewController {
         toggleButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 50).isActive = true
         toggleButton.addTarget(self, action: #selector(toggleMode), for: .primaryActionTriggered)
         
-        datePickerView.datePickerMode = .CountDownTimer//KBDatePickerModeCountDownTimer
+        //datePickerView.datePickerMode = .Date//KBDatePickerModeCountDownTimer
         //datePickerView.countDownDuration = 4100
-        datePickerView.minuteInterval = 1
+        datePickerView.minimumDate = DatePickerView.todayIn(year:2000)
+        datePickerView.maximumDate = DatePickerView.todayIn(year:5000)
         datePickerView.showDateLabel = true
     }
    
